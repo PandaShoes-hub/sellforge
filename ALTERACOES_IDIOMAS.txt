@@ -1,0 +1,25 @@
+LaunchPilot multilingual update
+
+Languages included:
+- Portuguese (pt-PT)
+- English (en-US)
+- Spanish (es-ES)
+- French (fr-FR)
+- Italian (it-IT)
+- German (de-DE)
+
+Translated areas:
+- Main navigation
+- Dashboard
+- Products
+- Content Studio
+- Social Media
+- Autopilot
+- Ads Manager
+- Calendar
+- Analytics
+- Settings
+- Plans and Billing
+- Buttons, cards, forms, empty states, status labels and help text
+
+The selected language is stored separately for each Shopify merchant.

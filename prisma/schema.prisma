@@ -1,0 +1,145 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:dev.sqlite"
+}
+
+model Session {
+  id                    String    @id
+  shop                  String
+  state                 String
+  isOnline              Boolean   @default(false)
+  scope                 String?
+  expires               DateTime?
+  accessToken           String
+  userId                BigInt?
+  firstName             String?
+  lastName              String?
+  email                 String?
+  accountOwner          Boolean   @default(false)
+  locale                String?
+  collaborator          Boolean?  @default(false)
+  emailVerified         Boolean?  @default(false)
+  refreshToken          String?
+  refreshTokenExpires   DateTime?
+}
+
+model BrandSettings {
+  id          String   @id @default(cuid())
+  shop        String   @unique
+  brandName   String?
+  tone        String   @default("friendly")
+  language    String   @default("pt-PT")
+  primaryColor String  @default("#5B3DF5")
+  logoUrl     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Campaign {
+  id          String   @id @default(cuid())
+  shop        String
+  productId   String?
+  productTitle String?
+  productImage String?
+  title       String
+  caption     String
+  hashtags    String
+  callToAction String
+  format      String   @default("feed")
+  status      String   @default("draft")
+  source      String   @default("template")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  scheduledPosts ScheduledPost[]
+
+  @@index([shop, createdAt])
+}
+
+model ScheduledPost {
+  id          String   @id @default(cuid())
+  shop        String
+  campaignId  String
+  platform    String
+  scheduledAt DateTime
+  status      String   @default("scheduled")
+  externalId  String?
+  createdAt   DateTime @default(now())
+  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([shop, scheduledAt])
+}
+
+
+model MetaConnection {
+  id                      String    @id @default(cuid())
+  shop                    String    @unique
+  status                  String    @default("connected")
+  facebookPageId          String?
+  facebookPageName        String?
+  pageAccessToken         String?
+  userAccessToken         String?
+  instagramAccountId      String?
+  instagramUsername       String?
+  instagramName           String?
+  instagramProfilePicture String?
+  tokenExpiresAt          DateTime?
+  lastError               String?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+}
+
+model AutopilotConfig {
+  id              String   @id @default(cuid())
+  shop            String   @unique
+  enabled         Boolean  @default(false)
+  postsPerWeek    Int      @default(3)
+  reelsPerWeek    Int      @default(1)
+  storiesPerWeek  Int      @default(3)
+  dailyBudget     Float    @default(0)
+  platforms       String   @default("facebook,instagram")
+  goal            String   @default("sales")
+  lastRunAt       DateTime?
+  nextRunAt       DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model AdsCampaign {
+  id              String   @id @default(cuid())
+  shop            String
+  provider        String
+  name            String
+  objective       String
+  status          String   @default("draft")
+  dailyBudget     Float
+  currency        String   @default("EUR")
+  productId       String?
+  productTitle    String?
+  headline        String
+  primaryText     String
+  destinationUrl  String?
+  externalId      String?
+  impressions     Int      @default(0)
+  clicks          Int      @default(0)
+  spend           Float    @default(0)
+  revenue         Float    @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([shop, createdAt])
+}
+
+model MerchantPlan {
+  id          String   @id @default(cuid())
+  shop        String   @unique
+  plan        String   @default("free")
+  status      String   @default("active")
+  trialEndsAt DateTime?
+  chargeId    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

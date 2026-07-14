@@ -1,0 +1,16 @@
+LAUNCHPILOT - BASE PROFISSIONAL V1
+
+Incluido:
+- Dashboard novo e responsivo
+- Contagem real de produtos Shopify
+- Navegacao organizada
+- Modulos Products, Content Studio, Social Media, Calendar, Analytics e Settings
+- Estrutura de componentes reutilizaveis
+- Estilos proprios LaunchPilot
+- Codigo de demonstracao da Shopify removido
+
+Para iniciar:
+1. Abrir PowerShell nesta pasta
+2. npm install
+3. shopify app dev
+4. Carregar P no terminal para abrir a app
