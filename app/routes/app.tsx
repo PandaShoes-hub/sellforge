@@ -3,7 +3,8 @@ import { Outlet, useLoaderData, useRouteError } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { AppProvider } from "@shopify/shopify-app-react-router/react";
 import { authenticate } from "../shopify.server";
-import { getShopLanguage, getTranslations } from "../i18n.server";
+import { getShopLanguage } from "../i18n.server";
+import { getTranslations } from "../i18n";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session } = await authenticate.admin(request);

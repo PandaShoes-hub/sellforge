@@ -9,7 +9,8 @@ import prisma from "../db.server";
 import { authenticate } from "../shopify.server";
 import { buildMetaAuthorizationUrl } from "../services/meta.server";
 import "../styles/launchpilot.css";
-import { getShopLanguage, getTranslations } from "../i18n.server";
+import { getShopLanguage } from "../i18n.server";
+import { getTranslations } from "../i18n";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session } = await authenticate.admin(request);

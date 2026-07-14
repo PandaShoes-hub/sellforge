@@ -2,7 +2,8 @@ import type { HeadersFunction, LoaderFunctionArgs } from "react-router";
 import { Form, useLoaderData } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
-import { getShopLanguage, getTranslations } from "../i18n.server";
+import { getShopLanguage } from "../i18n.server";
+import { getTranslations } from "../i18n";
 import "../styles/launchpilot.css";
 
 type Product = { id:string; title:string; handle:string; status:string; totalInventory:number|null; description:string|null; featuredMedia?:{preview?:{image?:{url?:string;altText?:string|null}|null}|null}|null; variants?:{nodes?:Array<{price?:string;compareAtPrice?:string|null}>} };

@@ -5,7 +5,8 @@ import { authenticate } from "../shopify.server";
 import db from "../db.server";
 import StatCard from "../components/dashboard/StatCard";
 import QuickAction from "../components/dashboard/QuickAction";
-import { getShopLanguage, getTranslations } from "../i18n.server";
+import { getShopLanguage } from "../i18n.server";
+import { getTranslations } from "../i18n";
 import "../styles/launchpilot.css";
 export const loader=async({request}:LoaderFunctionArgs)=>{const{admin,session}=await authenticate.admin(request);let shopName="your store",productCount=0;try{const r=await admin.graphql(`
     #graphql

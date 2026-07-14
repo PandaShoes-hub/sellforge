@@ -6,7 +6,8 @@ import db from "../db.server";
 import { generateCampaign } from "../services/marketing.server";
 import CreativePreview from "../components/studio/CreativePreview";
 import "../styles/launchpilot.css";
-import { getShopLanguage, getTranslations } from "../i18n.server";
+import { getShopLanguage } from "../i18n.server";
+import { getTranslations } from "../i18n";
 
 async function getProducts(admin: any) {
   const response = await admin.graphql(`#graphql

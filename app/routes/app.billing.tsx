@@ -3,7 +3,8 @@ import { Form, useLoaderData } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
 import db from "../db.server";
-import { getShopLanguage, getTranslations } from "../i18n.server";
+import { getShopLanguage } from "../i18n.server";
+import { getTranslations } from "../i18n";
 import "../styles/launchpilot.css";
 
 type Plan = { id: "free" | "starter" | "pro" | "business"; name: string; price: string; features: string[] };

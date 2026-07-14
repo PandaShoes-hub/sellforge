@@ -4,7 +4,8 @@ import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
 import db from "../db.server";
 import { createAdDraft, providerReadiness, type AdProvider } from "../services/ads.server";
-import { getShopLanguage, getTranslations } from "../i18n.server";
+import { getShopLanguage } from "../i18n.server";
+import { getTranslations } from "../i18n";
 import "../styles/launchpilot.css";
 
 type ShopifyProduct={id:string;title:string;onlineStoreUrl:string|null;variants?:{nodes?:Array<{price?:string}>}};
