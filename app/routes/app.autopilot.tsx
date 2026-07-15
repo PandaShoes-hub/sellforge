@@ -14,20 +14,27 @@ import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
 import db from "../db.server";
 import { getShopLanguage } from "../i18n.server";
+import { runAutopilot } from "../services/autopilot.server";
 
 import "../styles/launchpilot.css";
 
-type Language = "pt-PT" | "en-US" | "es-ES" | "fr-FR" | "it-IT" | "de-DE";
+type Language =
+  | "pt-PT"
+  | "en-US"
+  | "es-ES"
+  | "fr-FR"
+  | "it-IT"
+  | "de-DE";
 
 const copy = {
   "pt-PT": {
     page: "Piloto Automático",
     kicker: "Marketing sempre ativo",
-    title: "Deixa a SellForge organizar o teu marketing",
+    title: "Deixa a SellForge trabalhar por ti",
     description:
-      "Escolhe a frequência, as redes sociais e o orçamento. A SellForge guarda o plano e prepara a rotina de marketing.",
+      "A IA escolhe produtos, cria campanhas e agenda conteúdos automaticamente.",
     enable: "Ativar Piloto Automático",
-    enableHint: "A SellForge passa a preparar conteúdo e anúncios de forma recorrente.",
+    enableHint: "A SellForge prepara conteúdos de forma recorrente.",
     posts: "Publicações por semana",
     reels: "Reels por semana",
     stories: "Stories por semana",
@@ -41,29 +48,40 @@ const copy = {
     facebook: "Só Facebook",
     instagram: "Só Instagram",
     allSocial: "Facebook, Instagram e TikTok",
-    save: "Guardar Piloto Automático",
+    save: "Guardar configuração",
     saving: "A guardar...",
-    saved: "Piloto Automático guardado com sucesso.",
+    saved: "Configuração guardada com sucesso.",
+    runNow: "Executar agora",
+    running: "A executar...",
+    runSuccess: "Autopilot executado com sucesso.",
+    runSkipped: "O Autopilot não executou porque está desligado ou ainda não chegou a hora.",
+    runError: "Não foi possível executar o Autopilot.",
     status: "Estado atual",
     on: "Ligado",
     off: "Desligado",
+    lastRun: "Última execução",
     nextRun: "Próxima execução",
     notScheduled: "Ainda não agendado",
-    summary: "Resumo da rotina",
-    summaryHint: "O que a SellForge vai fazer por semana.",
-    postsLabel: "Publicações",
-    reelsLabel: "Reels",
-    storiesLabel: "Stories",
-    budgetLabel: "Orçamento diário",
+    totalCampaigns: "Campanhas criadas",
+    scheduledPosts: "Publicações agendadas",
+    publishedPosts: "Publicações publicadas",
+    recentActivity: "Atividade recente",
+    noActivity: "Ainda não existe atividade do Autopilot.",
+    created: "campanhas criadas",
+    scheduled: "publicações agendadas",
+    configuration: "Configuração",
+    overview: "Visão geral",
+    productsChosen: "Produtos escolhidos recentemente",
+    noProducts: "Ainda não existem produtos escolhidos.",
   },
   "en-US": {
     page: "Autopilot",
     kicker: "Always-on marketing",
-    title: "Let SellForge organise your marketing",
+    title: "Let SellForge work for you",
     description:
-      "Choose frequency, social channels and budget. SellForge saves the plan and prepares the marketing routine.",
+      "AI selects products, creates campaigns and schedules content automatically.",
     enable: "Enable Autopilot",
-    enableHint: "SellForge starts preparing recurring content and ads.",
+    enableHint: "SellForge prepares recurring content.",
     posts: "Posts per week",
     reels: "Reels per week",
     stories: "Stories per week",
@@ -77,69 +95,91 @@ const copy = {
     facebook: "Facebook only",
     instagram: "Instagram only",
     allSocial: "Facebook, Instagram and TikTok",
-    save: "Save Autopilot",
+    save: "Save configuration",
     saving: "Saving...",
-    saved: "Autopilot saved successfully.",
+    saved: "Configuration saved successfully.",
+    runNow: "Run now",
+    running: "Running...",
+    runSuccess: "Autopilot completed successfully.",
+    runSkipped: "Autopilot did not run because it is disabled or not due yet.",
+    runError: "Autopilot could not be executed.",
     status: "Current status",
     on: "On",
     off: "Off",
+    lastRun: "Last run",
     nextRun: "Next run",
     notScheduled: "Not scheduled yet",
-    summary: "Routine summary",
-    summaryHint: "What SellForge will prepare every week.",
-    postsLabel: "Posts",
-    reelsLabel: "Reels",
-    storiesLabel: "Stories",
-    budgetLabel: "Daily budget",
+    totalCampaigns: "Campaigns created",
+    scheduledPosts: "Scheduled posts",
+    publishedPosts: "Published posts",
+    recentActivity: "Recent activity",
+    noActivity: "There is no Autopilot activity yet.",
+    created: "campaigns created",
+    scheduled: "posts scheduled",
+    configuration: "Configuration",
+    overview: "Overview",
+    productsChosen: "Recently selected products",
+    noProducts: "No products selected yet.",
   },
   "es-ES": {
     page: "Piloto automático",
     kicker: "Marketing siempre activo",
-    title: "Deja que SellForge organice tu marketing",
+    title: "Deja que SellForge trabaje por ti",
     description:
-      "Elige frecuencia, redes sociales y presupuesto. SellForge guarda el plan y prepara la rutina.",
+      "La IA elige productos, crea campañas y programa contenido automáticamente.",
     enable: "Activar Piloto automático",
-    enableHint: "SellForge empieza a preparar contenido y anuncios recurrentes.",
+    enableHint: "SellForge prepara contenido recurrente.",
     posts: "Publicaciones por semana",
     reels: "Reels por semana",
     stories: "Stories por semana",
-    budget: "Presupuesto diario para anuncios",
+    budget: "Presupuesto diario",
     platforms: "¿Dónde quieres publicar?",
     goal: "Objetivo principal",
     sales: "Vender más",
-    traffic: "Llevar personas al sitio web",
+    traffic: "Llevar personas al sitio",
     awareness: "Dar a conocer la marca",
     facebookInstagram: "Facebook e Instagram",
     facebook: "Solo Facebook",
     instagram: "Solo Instagram",
     allSocial: "Facebook, Instagram y TikTok",
-    save: "Guardar Piloto automático",
+    save: "Guardar configuración",
     saving: "Guardando...",
-    saved: "Piloto automático guardado correctamente.",
+    saved: "Configuración guardada.",
+    runNow: "Ejecutar ahora",
+    running: "Ejecutando...",
+    runSuccess: "Piloto automático ejecutado.",
+    runSkipped: "No se ejecutó porque está apagado o aún no corresponde.",
+    runError: "No fue posible ejecutar el Piloto automático.",
     status: "Estado actual",
     on: "Activado",
     off: "Desactivado",
+    lastRun: "Última ejecución",
     nextRun: "Próxima ejecución",
     notScheduled: "Todavía no programado",
-    summary: "Resumen de la rutina",
-    summaryHint: "Lo que SellForge preparará cada semana.",
-    postsLabel: "Publicaciones",
-    reelsLabel: "Reels",
-    storiesLabel: "Stories",
-    budgetLabel: "Presupuesto diario",
+    totalCampaigns: "Campañas creadas",
+    scheduledPosts: "Publicaciones programadas",
+    publishedPosts: "Publicaciones publicadas",
+    recentActivity: "Actividad reciente",
+    noActivity: "Todavía no existe actividad.",
+    created: "campañas creadas",
+    scheduled: "publicaciones programadas",
+    configuration: "Configuración",
+    overview: "Resumen",
+    productsChosen: "Productos elegidos recientemente",
+    noProducts: "Todavía no hay productos elegidos.",
   },
   "fr-FR": {
     page: "Pilote automatique",
     kicker: "Marketing toujours actif",
-    title: "Laissez SellForge organiser votre marketing",
+    title: "Laissez SellForge travailler pour vous",
     description:
-      "Choisissez la fréquence, les réseaux et le budget. SellForge enregistre le plan et prépare la routine.",
+      "L’IA sélectionne les produits, crée les campagnes et programme le contenu.",
     enable: "Activer le Pilote automatique",
-    enableHint: "SellForge commence à préparer du contenu et des publicités récurrentes.",
+    enableHint: "SellForge prépare du contenu récurrent.",
     posts: "Publications par semaine",
     reels: "Reels par semaine",
     stories: "Stories par semaine",
-    budget: "Budget publicitaire quotidien",
+    budget: "Budget quotidien",
     platforms: "Où souhaitez-vous publier ?",
     goal: "Objectif principal",
     sales: "Vendre davantage",
@@ -149,33 +189,44 @@ const copy = {
     facebook: "Facebook uniquement",
     instagram: "Instagram uniquement",
     allSocial: "Facebook, Instagram et TikTok",
-    save: "Enregistrer le Pilote automatique",
+    save: "Enregistrer",
     saving: "Enregistrement...",
-    saved: "Pilote automatique enregistré avec succès.",
+    saved: "Configuration enregistrée.",
+    runNow: "Exécuter maintenant",
+    running: "Exécution...",
+    runSuccess: "Pilote automatique exécuté.",
+    runSkipped: "Aucune exécution car il est désactivé ou pas encore prévu.",
+    runError: "Impossible d’exécuter le Pilote automatique.",
     status: "État actuel",
     on: "Activé",
     off: "Désactivé",
+    lastRun: "Dernière exécution",
     nextRun: "Prochaine exécution",
     notScheduled: "Pas encore programmée",
-    summary: "Résumé de la routine",
-    summaryHint: "Ce que SellForge préparera chaque semaine.",
-    postsLabel: "Publications",
-    reelsLabel: "Reels",
-    storiesLabel: "Stories",
-    budgetLabel: "Budget quotidien",
+    totalCampaigns: "Campagnes créées",
+    scheduledPosts: "Publications programmées",
+    publishedPosts: "Publications publiées",
+    recentActivity: "Activité récente",
+    noActivity: "Aucune activité pour le moment.",
+    created: "campagnes créées",
+    scheduled: "publications programmées",
+    configuration: "Configuration",
+    overview: "Vue générale",
+    productsChosen: "Produits récemment sélectionnés",
+    noProducts: "Aucun produit sélectionné.",
   },
   "it-IT": {
     page: "Pilota automatico",
     kicker: "Marketing sempre attivo",
-    title: "Lascia che SellForge organizzi il marketing",
+    title: "Lascia che SellForge lavori per te",
     description:
-      "Scegli frequenza, social e budget. SellForge salva il piano e prepara la routine.",
+      "L’IA sceglie i prodotti, crea campagne e programma contenuti automaticamente.",
     enable: "Attiva Pilota automatico",
-    enableHint: "SellForge inizia a preparare contenuti e annunci ricorrenti.",
+    enableHint: "SellForge prepara contenuti ricorrenti.",
     posts: "Post a settimana",
     reels: "Reels a settimana",
     stories: "Stories a settimana",
-    budget: "Budget pubblicitario giornaliero",
+    budget: "Budget giornaliero",
     platforms: "Dove vuoi pubblicare?",
     goal: "Obiettivo principale",
     sales: "Vendere di più",
@@ -185,33 +236,44 @@ const copy = {
     facebook: "Solo Facebook",
     instagram: "Solo Instagram",
     allSocial: "Facebook, Instagram e TikTok",
-    save: "Salva Pilota automatico",
+    save: "Salva configurazione",
     saving: "Salvataggio...",
-    saved: "Pilota automatico salvato con successo.",
+    saved: "Configurazione salvata.",
+    runNow: "Esegui ora",
+    running: "Esecuzione...",
+    runSuccess: "Pilota automatico eseguito.",
+    runSkipped: "Non è stato eseguito perché è disattivato o non è ancora il momento.",
+    runError: "Impossibile eseguire il Pilota automatico.",
     status: "Stato attuale",
     on: "Attivo",
     off: "Disattivo",
+    lastRun: "Ultima esecuzione",
     nextRun: "Prossima esecuzione",
     notScheduled: "Non ancora programmata",
-    summary: "Riepilogo routine",
-    summaryHint: "Ciò che SellForge preparerà ogni settimana.",
-    postsLabel: "Post",
-    reelsLabel: "Reels",
-    storiesLabel: "Stories",
-    budgetLabel: "Budget giornaliero",
+    totalCampaigns: "Campagne create",
+    scheduledPosts: "Pubblicazioni programmate",
+    publishedPosts: "Pubblicazioni pubblicate",
+    recentActivity: "Attività recente",
+    noActivity: "Nessuna attività disponibile.",
+    created: "campagne create",
+    scheduled: "pubblicazioni programmate",
+    configuration: "Configurazione",
+    overview: "Panoramica",
+    productsChosen: "Prodotti scelti di recente",
+    noProducts: "Nessun prodotto selezionato.",
   },
   "de-DE": {
     page: "Autopilot",
     kicker: "Dauerhaftes Marketing",
-    title: "Lass SellForge dein Marketing organisieren",
+    title: "Lass SellForge für dich arbeiten",
     description:
-      "Wähle Häufigkeit, Plattformen und Budget. SellForge speichert den Plan und bereitet die Routine vor.",
+      "Die KI wählt Produkte, erstellt Kampagnen und plant Inhalte automatisch.",
     enable: "Autopilot aktivieren",
-    enableHint: "SellForge beginnt, wiederkehrende Inhalte und Anzeigen vorzubereiten.",
+    enableHint: "SellForge bereitet wiederkehrende Inhalte vor.",
     posts: "Beiträge pro Woche",
     reels: "Reels pro Woche",
     stories: "Stories pro Woche",
-    budget: "Tägliches Anzeigenbudget",
+    budget: "Tägliches Budget",
     platforms: "Wo möchtest du veröffentlichen?",
     goal: "Hauptziel",
     sales: "Mehr verkaufen",
@@ -221,44 +283,126 @@ const copy = {
     facebook: "Nur Facebook",
     instagram: "Nur Instagram",
     allSocial: "Facebook, Instagram und TikTok",
-    save: "Autopilot speichern",
+    save: "Konfiguration speichern",
     saving: "Wird gespeichert...",
-    saved: "Autopilot erfolgreich gespeichert.",
+    saved: "Konfiguration gespeichert.",
+    runNow: "Jetzt ausführen",
+    running: "Wird ausgeführt...",
+    runSuccess: "Autopilot erfolgreich ausgeführt.",
+    runSkipped: "Keine Ausführung, da er deaktiviert oder noch nicht fällig ist.",
+    runError: "Autopilot konnte nicht ausgeführt werden.",
     status: "Aktueller Status",
     on: "Aktiv",
     off: "Inaktiv",
+    lastRun: "Letzte Ausführung",
     nextRun: "Nächste Ausführung",
     notScheduled: "Noch nicht geplant",
-    summary: "Routineübersicht",
-    summaryHint: "Was SellForge jede Woche vorbereitet.",
-    postsLabel: "Beiträge",
-    reelsLabel: "Reels",
-    storiesLabel: "Stories",
-    budgetLabel: "Tagesbudget",
+    totalCampaigns: "Erstellte Kampagnen",
+    scheduledPosts: "Geplante Beiträge",
+    publishedPosts: "Veröffentlichte Beiträge",
+    recentActivity: "Letzte Aktivität",
+    noActivity: "Noch keine Aktivität.",
+    created: "Kampagnen erstellt",
+    scheduled: "Beiträge geplant",
+    configuration: "Konfiguration",
+    overview: "Übersicht",
+    productsChosen: "Kürzlich ausgewählte Produkte",
+    noProducts: "Noch keine Produkte ausgewählt.",
   },
 } satisfies Record<Language, Record<string, string>>;
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session } = await authenticate.admin(request);
 
-  const [config, language] = await Promise.all([
-    db.autopilotConfig.upsert({
-      where: { shop: session.shop },
-      update: {},
-      create: { shop: session.shop },
-    }),
-    getShopLanguage(session.shop),
-  ]);
+  const [config, language, campaignCount, scheduledCount, publishedCount, recent] =
+    await Promise.all([
+      db.autopilotConfig.upsert({
+        where: { shop: session.shop },
+        update: {},
+        create: { shop: session.shop },
+      }),
+      getShopLanguage(session.shop),
+      db.campaign.count({
+        where: { shop: session.shop },
+      }),
+      db.scheduledPost.count({
+        where: {
+          shop: session.shop,
+          status: "scheduled",
+        },
+      }),
+      db.scheduledPost.count({
+        where: {
+          shop: session.shop,
+          status: "published",
+        },
+      }),
+      db.campaign.findMany({
+        where: {
+          shop: session.shop,
+          productTitle: { not: null },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 6,
+      }),
+    ]);
 
   return {
     config,
     language,
+    campaignCount,
+    scheduledCount,
+    publishedCount,
+    recent,
   };
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-  const { session } = await authenticate.admin(request);
+  const { admin, session } = await authenticate.admin(request);
   const form = await request.formData();
+  const intent = String(form.get("intent") || "save");
+
+  if (intent === "run_now") {
+    const existing = await db.autopilotConfig.findUnique({
+      where: { shop: session.shop },
+    });
+
+    if (!existing?.enabled) {
+      return {
+        ok: false,
+        intent,
+        error: "AUTOPILOT_DISABLED",
+      };
+    }
+
+    await db.autopilotConfig.update({
+      where: { shop: session.shop },
+      data: { nextRunAt: new Date() },
+    });
+
+    try {
+      const run = await runAutopilot({
+        shop: session.shop,
+        admin,
+        now: new Date(),
+      });
+
+      return {
+        ok: true,
+        intent,
+        run,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        intent,
+        error:
+          error instanceof Error
+            ? error.message
+            : "AUTOPILOT_FAILED",
+      };
+    }
+  }
 
   const enabled = form.get("enabled") === "on";
   const postsPerWeek = Math.max(
@@ -292,9 +436,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       dailyBudget,
       platforms,
       goal,
-      nextRunAt: enabled
-        ? new Date(Date.now() + 86_400_000)
-        : null,
+      nextRunAt: enabled ? new Date() : null,
     },
     create: {
       shop: session.shop,
@@ -305,35 +447,40 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       dailyBudget,
       platforms,
       goal,
-      nextRunAt: enabled
-        ? new Date(Date.now() + 86_400_000)
-        : null,
+      nextRunAt: enabled ? new Date() : null,
     },
   });
 
   return {
     ok: true,
+    intent,
     config,
   };
 };
 
 export default function Autopilot() {
-  const { config, language } = useLoaderData<typeof loader>();
+  const data = useLoaderData<typeof loader>();
   const result = useActionData<typeof action>();
   const navigation = useNavigation();
 
-  const currentLanguage = language as Language;
+  const currentLanguage = data.language as Language;
   const text = copy[currentLanguage] ?? copy["en-US"];
   const busy = navigation.state !== "idle";
+  const runningIntent =
+    navigation.formData?.get("intent")?.toString() ?? "";
+
   const savedConfig =
-    result && "config" in result ? result.config : config;
+    result &&
+    "config" in result &&
+    result.config
+      ? result.config
+      : data.config;
 
   return (
     <s-page heading={text.page}>
       <div className="lp-page-stack">
         <section className="lp-module-hero">
-          <div className="lp-module-icon">A</div>
-
+          <div className="lp-module-icon">AI</div>
           <div>
             <p className="lp-eyebrow">{text.kicker}</p>
             <h2 className="lp-module-title">{text.title}</h2>
@@ -341,16 +488,97 @@ export default function Autopilot() {
           </div>
         </section>
 
+        <section className="lp-stats-grid">
+          <article className="lp-stat-card">
+            <div className="lp-stat-card-top">
+              <div className="lp-stat-icon">A</div>
+            </div>
+            <div className="lp-stat-content">
+              <p className="lp-eyebrow">{text.status}</p>
+              <h2 className="lp-stat-value">
+                {savedConfig.enabled ? text.on : text.off}
+              </h2>
+              <p className="lp-muted">
+                {text.lastRun}:{" "}
+                {savedConfig.lastRunAt
+                  ? new Date(savedConfig.lastRunAt).toLocaleString(
+                      currentLanguage,
+                    )
+                  : text.notScheduled}
+              </p>
+            </div>
+          </article>
+
+          <article className="lp-stat-card">
+            <div className="lp-stat-card-top">
+              <div className="lp-stat-icon">C</div>
+            </div>
+            <div className="lp-stat-content">
+              <p className="lp-eyebrow">{text.totalCampaigns}</p>
+              <h2 className="lp-stat-value">{data.campaignCount}</h2>
+              <p className="lp-muted">{text.created}</p>
+            </div>
+          </article>
+
+          <article className="lp-stat-card">
+            <div className="lp-stat-card-top">
+              <div className="lp-stat-icon">S</div>
+            </div>
+            <div className="lp-stat-content">
+              <p className="lp-eyebrow">{text.scheduledPosts}</p>
+              <h2 className="lp-stat-value">{data.scheduledCount}</h2>
+              <p className="lp-muted">{text.nextRun}</p>
+            </div>
+          </article>
+
+          <article className="lp-stat-card">
+            <div className="lp-stat-card-top">
+              <div className="lp-stat-icon">P</div>
+            </div>
+            <div className="lp-stat-content">
+              <p className="lp-eyebrow">{text.publishedPosts}</p>
+              <h2 className="lp-stat-value">{data.publishedCount}</h2>
+              <p className="lp-muted">{text.recentActivity}</p>
+            </div>
+          </article>
+        </section>
+
+        {result && result.intent === "run_now" ? (
+          result.ok && "run" in result ? (
+            <div className="lp-social-notice success">
+              {result.run?.skipped
+                ? text.runSkipped
+                  : `${text.runSuccess} ${result.run?.created ?? 0} ${text.created} · ${result.run?.scheduled ?? 0} ${text.scheduled}.`}
+            </div>
+          ) : (
+            <div className="lp-social-notice error">
+              {text.runError}
+            </div>
+          )
+        ) : null}
+
+        {result && result.intent === "save" && result.ok ? (
+          <div className="lp-social-notice success">{text.saved}</div>
+        ) : null}
+
         <div className="lp-studio-grid">
           <section className="lp-panel">
+            <div className="lp-panel-header">
+              <div>
+                <h3 className="lp-panel-title">{text.configuration}</h3>
+                <p className="lp-panel-subtitle">{text.enableHint}</p>
+              </div>
+            </div>
+
             <Form method="post" className="lp-form">
+              <input type="hidden" name="intent" value="save" />
+
               <label className="lp-toggle-row">
                 <input
                   type="checkbox"
                   name="enabled"
                   defaultChecked={savedConfig.enabled}
                 />
-
                 <span>
                   <strong>{text.enable}</strong>
                   <small>{text.enableHint}</small>
@@ -368,7 +596,6 @@ export default function Autopilot() {
                     defaultValue={savedConfig.postsPerWeek}
                   />
                 </label>
-
                 <label>
                   {text.reels}
                   <input
@@ -392,7 +619,6 @@ export default function Autopilot() {
                     defaultValue={savedConfig.storiesPerWeek}
                   />
                 </label>
-
                 <label>
                   {text.budget}
                   <input
@@ -425,10 +651,7 @@ export default function Autopilot() {
 
                 <label>
                   {text.goal}
-                  <select
-                    name="goal"
-                    defaultValue={savedConfig.goal}
-                  >
+                  <select name="goal" defaultValue={savedConfig.goal}>
                     <option value="sales">{text.sales}</option>
                     <option value="traffic">{text.traffic}</option>
                     <option value="awareness">{text.awareness}</option>
@@ -441,20 +664,38 @@ export default function Autopilot() {
                 disabled={busy}
                 type="submit"
               >
-                {busy ? text.saving : text.save}
+                {busy && runningIntent === "save"
+                  ? text.saving
+                  : text.save}
               </button>
             </Form>
 
-            {result && "ok" in result && result.ok ? (
-              <p className="lp-success-message">{text.saved}</p>
-            ) : null}
+            <Form method="post">
+              <input type="hidden" name="intent" value="run_now" />
+              <button
+                className="lp-native-button"
+                type="submit"
+                disabled={busy || !savedConfig.enabled}
+              >
+                {busy && runningIntent === "run_now"
+                  ? text.running
+                  : text.runNow}
+              </button>
+            </Form>
           </section>
 
           <section className="lp-panel">
             <div className="lp-panel-header">
               <div>
-                <h3 className="lp-panel-title">{text.status}</h3>
-                <p className="lp-panel-subtitle">{text.summaryHint}</p>
+                <h3 className="lp-panel-title">{text.overview}</h3>
+                <p className="lp-panel-subtitle">
+                  {text.nextRun}:{" "}
+                  {savedConfig.nextRunAt
+                    ? new Date(savedConfig.nextRunAt).toLocaleString(
+                        currentLanguage,
+                      )
+                    : text.notScheduled}
+                </p>
               </div>
             </div>
 
@@ -464,45 +705,44 @@ export default function Autopilot() {
               }`}
             >
               <span>{savedConfig.enabled ? "✓" : "→"}</span>
-
               <div>
-                <strong>
-                  {savedConfig.enabled ? text.on : text.off}
-                </strong>
+                <strong>{savedConfig.enabled ? text.on : text.off}</strong>
                 <p>
-                  {text.nextRun}:{" "}
-                  {savedConfig.nextRunAt
-                    ? new Date(
-                        savedConfig.nextRunAt,
-                      ).toLocaleString(currentLanguage)
-                    : text.notScheduled}
+                  {savedConfig.postsPerWeek} {text.posts.toLowerCase()} ·{" "}
+                  {savedConfig.reelsPerWeek} {text.reels.toLowerCase()} ·{" "}
+                  {savedConfig.storiesPerWeek} {text.stories.toLowerCase()}
                 </p>
               </div>
             </div>
 
-            <h3 className="lp-panel-title">{text.summary}</h3>
+            <h3 className="lp-panel-title">{text.productsChosen}</h3>
 
-            <ul className="lp-checklist">
-              <li>
-                <span className="lp-check">✓</span>
-                {text.postsLabel}: {savedConfig.postsPerWeek}
-              </li>
-
-              <li>
-                <span className="lp-check">✓</span>
-                {text.reelsLabel}: {savedConfig.reelsPerWeek}
-              </li>
-
-              <li>
-                <span className="lp-check">✓</span>
-                {text.storiesLabel}: {savedConfig.storiesPerWeek}
-              </li>
-
-              <li>
-                <span className="lp-check">✓</span>
-                {text.budgetLabel}: €{savedConfig.dailyBudget}
-              </li>
-            </ul>
+            <div className="lp-campaign-list">
+              {data.recent.length ? (
+                data.recent.map((campaign) => (
+                  <article className="lp-campaign-row" key={campaign.id}>
+                    {campaign.productImage ? (
+                      <img src={campaign.productImage} alt="" />
+                    ) : (
+                      <div className="lp-row-placeholder">AI</div>
+                    )}
+                    <div>
+                      <strong>
+                        {campaign.productTitle || campaign.title}
+                      </strong>
+                      <span>
+                        {campaign.format} ·{" "}
+                        {new Date(campaign.createdAt).toLocaleDateString(
+                          currentLanguage,
+                        )}
+                      </span>
+                    </div>
+                  </article>
+                ))
+              ) : (
+                <p className="lp-muted">{text.noProducts}</p>
+              )}
+            </div>
           </section>
         </div>
       </div>
